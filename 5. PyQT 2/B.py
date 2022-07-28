@@ -10,18 +10,15 @@ class AlignDelegate(qtw.QStyledItemDelegate):
         option.displayAlignment = qtc.Qt.AlignCenter
 
 
-class Window(qtw.QWidget):
-    def __init__(self):
+class Films(qtw.QWidget):
+    def __init__(self, uiFile):
         super().__init__()
-        self.rowLimit = 10
+        self.db = "films.db"
+        self.rowLim = 10
+        self.pageLim = 1
+        self.curr_genre = "-"
 
-        con = sqlite3.connect("films.db")
-        cur = con.cursor()
-        self.entries = len(cur.execute("select * from Films;").fetchall())
-        self.pageLimit = self.entries // 10 + 1
-        con.close()
-
-        uic.loadUi("films.ui", self)
+        uic.loadUi(uiFile, self)
 
         self.pageNum.setValidator(qtg.QRegExpValidator(qtc.QRegExp("[1-9][0-9]*")))
         self.pageNum.textChanged.connect(lambda: self.resizeToContents())
@@ -30,8 +27,69 @@ class Window(qtw.QWidget):
         self.prev.clicked.connect(lambda: self.changePage(-1))
         self.next.clicked.connect(lambda: self.changePage(1))
 
+        qtw.QShortcut(
+            qtg.QKeySequence(qtc.Qt.Key_Left),
+            self,
+            activated=lambda: self.changePage(-1),
+        )
+        qtw.QShortcut(
+            qtg.QKeySequence(qtc.Qt.Key_Right),
+            self,
+            activated=lambda: self.changePage(1),
+        )
+
+        self.updatePageLim()
+
         self.show()
         self.updateTable()
+
+    def getRequest(self, limited=True):
+        request = "SELECT * FROM Films"
+        if self.curr_genre != "-":
+            request += f"\nWHERE genre={self.curr_genre}"
+        if limited:
+            page = int(self.pageNum.text())
+            if page > self.pageLim:
+                page = self.pageLim
+                self.pageNum.setText(f"{page}")
+            request += f"\nLIMIT {10*(page-1)}, {self.rowLim}"
+
+            con = sqlite3.connect(self.db)
+            cur = con.cursor()
+            items = cur.execute(request).fetchall()
+            films = []
+
+            for id, title, year, genre, duration in items:
+                title = str(title)
+                year = str(year)
+                genre = (
+                    cur.execute(f"SELECT title FROM genres WHERE id={genre}")
+                    .fetchone()[0]
+                    .upper()
+                )
+                duration = str(duration)
+
+                if not title:
+                    title = "-"
+                if not year:
+                    year = "-"
+                if not genre:
+                    genre = "-"
+                if not duration:
+                    duration = "-"
+
+                films.append((title, year, genre, duration))
+            con.close()
+            return films
+        else:
+            con = sqlite3.connect(self.db)
+            cur = con.cursor()
+            items = cur.execute(request).fetchall()
+            con.close()
+            return items
+
+    def updatePageLim(self):
+        self.pageLim = len(self.getRequest(limited=False)) // 10 + 1
 
     def resizeToContents(self):
         font = qtg.QFont("MS Shell Dlg 2", 8)
@@ -57,41 +115,10 @@ class Window(qtw.QWidget):
         self.adjustSize()
 
     def updateTable(self):
-        num = int(self.pageNum.text())
-
-        if num > self.pageLimit:
-            num = self.pageLimit
-            self.pageNum.setText(f"{num}")
-
         for i in range(self.table.rowCount(), -1, -1):
             self.table.removeRow(i)
 
-        con = sqlite3.connect("films.db")
-        cur = con.cursor()
-        films = cur.execute(
-            f"SELECT title,year,genre,duration FROM Films LIMIT {10*(num-1)}, {self.rowLimit}"
-        ).fetchall()
-        films.sort()
-
-        for title, year, genre, duration in films:
-            title = str(title)
-            year = str(year)
-            genre = (
-                cur.execute(f"SELECT title FROM genres WHERE id={genre}")
-                .fetchone()[0]
-                .upper()
-            )
-            duration = str(duration)
-
-            if not title:
-                title = "-"
-            if not year:
-                year = "-"
-            if not genre:
-                genre = "-"
-            if not duration:
-                duration = "-"
-
+        for title, year, genre, duration in self.getRequest():
             row_pos = self.table.rowCount()
             self.table.insertRow(row_pos)
             self.table.setItem(row_pos, 0, qtw.QTableWidgetItem(title))
@@ -103,7 +130,6 @@ class Window(qtw.QWidget):
         for i in range(1, self.table.columnCount()):
             self.table.setItemDelegateForColumn(i, delegate)
 
-        con.close()
         self.adjustTable()
 
     def changePage(self, x):
@@ -112,6 +138,7 @@ class Window(qtw.QWidget):
             self.updateTable()
 
 
-app = qtw.QApplication(sys.argv)
-window = Window()
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = qtw.QApplication(sys.argv)
+    window = Films("films.ui")
+    sys.exit(app.exec_())
