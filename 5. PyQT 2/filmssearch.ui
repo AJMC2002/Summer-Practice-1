@@ -46,6 +46,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,1,4">
+     <property name="spacing">
+      <number>10</number>
+     </property>
      <property name="topMargin">
       <number>10</number>
      </property>
@@ -64,13 +67,31 @@
      </item>
      <item alignment="Qt::AlignVCenter">
       <widget class="QLabel" name="search">
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+         <italic>true</italic>
+        </font>
+       </property>
        <property name="text">
-        <string>Search</string>
+        <string>Найти</string>
        </property>
       </widget>
      </item>
      <item alignment="Qt::AlignVCenter">
-      <widget class="QComboBox" name="searchItems"/>
+      <widget class="QComboBox" name="searchItems">
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>0</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>-</string>
+        </property>
+       </item>
+      </widget>
      </item>
     </layout>
    </item>
