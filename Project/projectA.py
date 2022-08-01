@@ -79,7 +79,7 @@ class ASCIIConverter(qtw.QMainWindow):
         def greyify(img: Image) -> Image:
             return img.convert("L")
 
-        def map_pix_to_char(pixels, char_subset):
+        def map_pix_to_char(pixels: list, char_subset: list) -> list:
             intensities = sorted(list(set(pixels)))
             pixel_intensities = [intensities.index(pixel) for pixel in pixels]
 
