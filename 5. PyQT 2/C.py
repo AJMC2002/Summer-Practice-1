@@ -1,12 +1,14 @@
 import sys
 import sqlite3
-from B import Films
 from PyQt5 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
+from B import Films
 
 
 class FilmsSearch(Films):
     def __init__(self, uiFile):
         super().__init__(uiFile)
+
+        self.searchItems.setDuplicatesEnabled(False)
 
         con = sqlite3.connect(self.db)
         cur = con.cursor()
@@ -29,5 +31,5 @@ class FilmsSearch(Films):
 
 if __name__ == "__main__":
     app = qtw.QApplication(sys.argv)
-    window = FilmsSearch("filmssearch.ui")
+    window = FilmsSearch("filmsC.ui")
     sys.exit(app.exec_())

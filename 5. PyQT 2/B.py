@@ -21,6 +21,7 @@ class Films(qtw.QWidget):
         uic.loadUi(uiFile, self)
 
         self.pageNum.setValidator(qtg.QRegExpValidator(qtc.QRegExp("[1-9][0-9]*")))
+        self.pageNum.setMaxLength(40)
         self.pageNum.textChanged.connect(lambda: self.resizeToContents())
         self.pageNum.editingFinished.connect(lambda: self.updateTable())
 
@@ -30,12 +31,12 @@ class Films(qtw.QWidget):
         qtw.QShortcut(
             qtg.QKeySequence(qtc.Qt.Key_Left),
             self,
-            activated=lambda: self.changePage(-1),
+            activated=lambda: self.prev.click(),
         )
         qtw.QShortcut(
             qtg.QKeySequence(qtc.Qt.Key_Right),
             self,
-            activated=lambda: self.changePage(1),
+            activated=lambda: self.next.click(),
         )
 
         self.updatePageLim()
@@ -112,7 +113,10 @@ class Films(qtw.QWidget):
                 headery.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
             headery.setSectionResizeMode(i, qtw.QHeaderView.ResizeToContents)
 
+        self.setMinimumHeight(0)
+        self.setMaximumHeight(16777215)
         self.adjustSize()
+        self.setFixedHeight(self.height())
 
     def updateTable(self):
         for i in range(self.table.rowCount(), -1, -1):
@@ -140,5 +144,5 @@ class Films(qtw.QWidget):
 
 if __name__ == "__main__":
     app = qtw.QApplication(sys.argv)
-    window = Films("films.ui")
+    window = Films("filmsB.ui")
     sys.exit(app.exec_())
