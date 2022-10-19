@@ -17,7 +17,6 @@ box_sprites = pg.sprite.Group()
 player_sprites = pg.sprite.Group()
 
 transparent = (0, 0, 0, 0)
-black = pg.Color("black")
 dark_green = pg.Color("darkGreen")
 
 
