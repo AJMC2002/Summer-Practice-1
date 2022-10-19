@@ -3,7 +3,7 @@ import random as rd
 import pygame as pg
 
 pg.init()
-pg.display.set_caption("Sonic")
+pg.display.set_caption("Шарики - Sonic")
 clock = pg.time.Clock()
 size = width, height = 500, 500
 screen = pg.display.set_mode(size)
@@ -32,7 +32,7 @@ class Frames:
         try:
             img = pg.image.load(img_path).convert_alpha()
         except pg.error as message:
-            print("Cannot load image:", name)
+            print("Cannot load image:", self.filename)
             raise SystemExit(message)
         return img
 
@@ -47,10 +47,10 @@ class Frames:
 
 
 sonic_scale = 1.75
-sonic = Frames("sonic.png", 1, 8, 4, sonic_scale)
+sonic = Frames("assets\\A\\sonic.png", 1, 8, 4, sonic_scale)
 
 shield_scale = sonic_scale * sonic.def_w / (sonic.def_w - 4)
-shield = Frames("shield.png", 1, 2, 8, shield_scale)
+shield = Frames("assets\\A\\shield.png", 1, 2, 8, shield_scale)
 
 
 class Sonic(pg.sprite.Sprite):
@@ -59,14 +59,14 @@ class Sonic(pg.sprite.Sprite):
         self.image = pg.Surface(shield.size, pg.SRCALPHA)
         self.rect = self.image.get_rect()
         self.rect.center = pos
-        self.radius = round(shield.w / 2)+1
+        self.radius = round(shield.w / 2) + 1
         self.sonic_frame = 2  # looking to front frame
         self.shield_frame = 0
         self.__update_img()
 
         self.pos = pg.math.Vector2(pos)
-        self.speed = 7
-        self.dir = pg.math.Vector2((rd.uniform(-1, 1), rd.uniform(-1, 1))).normalize()
+        self.speed = 6
+        self.dir = pg.math.Vector2(rd.uniform(-1, 1), rd.uniform(-1, 1)).normalize()
 
     def __update_img(self):
         cur_sonic = sonic.frames[self.sonic_frame]
@@ -95,14 +95,14 @@ class Sonic(pg.sprite.Sprite):
             else:
                 return pg.sprite.collide_circle(sprite1, sprite2)
 
-        def bounce(normal_vector):
-            normal = pg.math.Vector2(normal_vector).normalize()
-            self.dir = self.dir.reflect(normal)
+        def bounce(normal):
+            normalVector = pg.math.Vector2(normal)
+            self.dir = self.dir.reflect(normalVector)
 
         collisions = pg.sprite.spritecollide(self, sprites, False, collide)
         if collisions:
             for collision in collisions:
-                bounce(self.pos - collision.pos)
+                bounce(collision.pos - self.pos)
         if self.rect.top <= margin:
             bounce((0, -1))
         if self.rect.bottom >= height - margin:
